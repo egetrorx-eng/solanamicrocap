@@ -38,6 +38,7 @@ body {
   }
 }
 
+/* Touch-friendly tap targets on mobile */
 @media (max-width: 768px) {
   button {
     min-height: 44px;
@@ -45,6 +46,7 @@ body {
   }
 }
 
+/* Table styling */
 table {
   font-variant-numeric: tabular-nums;
 }
