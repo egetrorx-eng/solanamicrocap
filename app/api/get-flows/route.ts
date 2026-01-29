@@ -6,6 +6,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const timeframe = searchParams.get('timeframe') || '5min'
 
+    // Query Supabase for latest data for the specified timeframe
     const { data, error } = await supabase
       .from('token_flows')
       .select('*')
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest) {
       throw error
     }
 
+    // Format data for frontend
     const formattedData = (data || []).map(token => ({
       symbol: token.symbol,
       price_change: parseFloat(token.price_change_pct || 0),
