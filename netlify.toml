@@ -16,3 +16,13 @@
 [[functions]]
   path = "netlify/functions/update-flows.ts"
   schedule = "*/5 * * * *"
+[build]
+  command = "npm run build"
+  publish = ".next"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
