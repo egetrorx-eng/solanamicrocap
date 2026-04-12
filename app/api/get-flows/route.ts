@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
       .from('token_flows')
       .select('*')
       .eq('timeframe', timeframe)
+      .order('fetched_at', { ascending: false })
       .order('net_flows', { ascending: false })
       .limit(50)
 

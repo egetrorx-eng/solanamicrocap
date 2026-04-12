@@ -29,21 +29,32 @@ export const handler: Handler = async () => {
     try {
         for (const timeframe of TIMEFRAMES) {
             const tokens = await fetchNansenData(timeframe)
-            for (const token of tokens) {
-                const netFlows = (token.smartMoneyInflows || 0) - (token.smartMoneyOutflows || 0)
-                await supabase.from('token_flows').insert({
-                    symbol: token.symbol,
-                    mint_address: token.mintAddress,
-                    timeframe: timeframe,
-                    price_change_pct: token.price24hChange || 0,
-                    market_cap: token.marketCap,
-                    smart_wallet_count: token.smartWalletCount || 0,
-                    volume: token.volume || 0,
-                    liquidity: token.liquidity || 0,
-                    inflows: token.smartMoneyInflows || 0,
-                    outflows: token.smartMoneyOutflows || 0,
-                    net_flows: netFlows,
-                })
+            if (tokens.length === 0) continue
+
+            // Remove stale records for this timeframe before inserting fresh data
+            const { error: deleteError } = await supabase.from('token_flows').delete().eq('timeframe', timeframe)
+            if (deleteError) {
+                console.error(`Error deleting stale data for ${timeframe}:`, deleteError)
+                continue
+            }
+
+            const rows = tokens.map((token: any) => ({
+                symbol: token.symbol,
+                mint_address: token.mintAddress,
+                timeframe: timeframe,
+                price_change_pct: token.price24hChange || 0,
+                market_cap: token.marketCap ?? null,
+                smart_wallet_count: token.smartWalletCount || 0,
+                volume: token.volume || 0,
+                liquidity: token.liquidity || 0,
+                inflows: token.smartMoneyInflows || 0,
+                outflows: token.smartMoneyOutflows || 0,
+                net_flows: (token.smartMoneyInflows || 0) - (token.smartMoneyOutflows || 0),
+            }))
+
+            const { error } = await supabase.from('token_flows').insert(rows)
+            if (error) {
+                console.error(`Error inserting data for ${timeframe}:`, error)
             }
         }
         return { statusCode: 200, body: 'Success' }

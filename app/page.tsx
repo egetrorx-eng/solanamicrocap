@@ -36,7 +36,12 @@ export default function Dashboard() {
         try {
             const res = await fetch(`/api/get-flows?timeframe=${timeframe.toLowerCase()}`)
             const json = await res.json()
-            setData(json)
+            if (res.ok && Array.isArray(json)) {
+                setData(json)
+            } else {
+                console.error('API error:', json)
+                setData([])
+            }
         } catch (error) {
             console.error('Error fetching data:', error)
             setData([])
